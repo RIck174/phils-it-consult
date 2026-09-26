@@ -1,19 +1,18 @@
 # 6. Local setup
 
-Three independent projects, three installs. There is no root `package.json` and no command that runs everything at once.
+Two independent projects, two installs. There is no root `package.json` and no command that runs both at once.
 
 ## Prerequisites
 
 | Tool | Version | Why |
 | --- | --- | --- |
-| Node.js | 20.x or newer (22+ recommended) | Next 16 and Vite 8 both require modern Node |
+| Node.js | 20.x or newer (22+ recommended) | required by Vite 8 and Express 5 |
 | npm | bundled with Node | `backend/` and `frontend/` (both have `package-lock.json`) |
-| pnpm | 12.3.4 | `phil-s-it-consult-landing-page/` pins `packageManager: "pnpm@12.3.4"` and ships `pnpm-lock.yaml`. Install with `corepack enable` |
 | PostgreSQL | 13+ | the backend's only datastore |
 | Cloudinary account | — | image uploads (optional unless you exercise `POST /api/upload`) |
 | Gmail account with an App Password | — | service-request notification emails (optional unless you exercise `POST /api/service_requests`) |
 
-Mixing package managers across folders is intentional only in the sense that it is what the repo contains; do not run `npm install` inside the landing page or you will get a second lockfile.
+Both projects use npm and commit `package-lock.json`; use `npm ci` if you want installs to match the lockfile exactly.
 
 ## 1. Database
 
@@ -91,28 +90,13 @@ No env file is used. The API base URL is hardcoded in `src/utils/api.js` to `htt
 
 Other scripts: `npm run build` (see the warning below), `npm run preview`, `npm run lint`.
 
-## 4. Landing page
-
-```bash
-cd phil-s-it-consult-landing-page
-corepack enable         # once, to get the pinned pnpm
-pnpm install
-pnpm dev               # → http://localhost:3000
-```
-
-No environment variables exist for this project and it makes no network calls. `pnpm build` then `pnpm start` for a production build. Note that `next.config.mjs` sets `typescript.ignoreBuildErrors: true`, so a successful build does **not** mean the TypeScript is sound, and `images.unoptimized: true` disables Next's image pipeline.
-
-If you run the storefront and the landing page at the same time, they will both want to be reachable in a browser on different ports (5173 and 3000) — they are unrelated deployments and neither links to the other.
-
-## Running everything at once
+## Running both at once
 
 ```bash
 # terminal 1
 cd backend && npm run dev
 # terminal 2
 cd frontend && npm run dev
-# terminal 3 (optional — unrelated to the other two)
-cd phil-s-it-consult-landing-page && pnpm dev
 ```
 
 ## Current check status
@@ -126,7 +110,6 @@ Verified against this commit on Linux:
 | `frontend`: `npm install` | OK |
 | `frontend`: `npm run lint` | **fails — 15 errors** (unused vars/imports, `react-refresh/only-export-components` on both contexts, `Date.now()` in render, state update inside an effect) |
 | `frontend`: `npm run build` | **fails** — `Could not resolve "./pages/services/ItServices"` and `"../../components/SpotlightCard"`; case mismatches that only resolve on case-insensitive macOS/Windows filesystems. Any Linux CI or Docker build fails here |
-| `landing page`: `pnpm build` | not run here; `ignoreBuildErrors` means type errors would not surface anyway |
 
 These are documented, not fixed, per the scope of this work. `npm run build` failing means **the storefront cannot currently be deployed from a Linux runner** — fixing the two import casings is the prerequisite for any CI.
 
@@ -137,4 +120,4 @@ These are documented, not fixed, per the scope of this work. `npm run build` fai
 - No linting or formatting config for `backend/` at all (the frontend's `eslint.config.js` covers only `frontend/`).
 - No pre-commit hooks (`.pre-commit-config.yaml` and `.husky/` are absent).
 - The root `.gitignore` begins with a UTF-8 BOM, which makes its first line (`frontend/node_modules/`) a literal pattern that never matches. It happens not to matter because each project has its own `.gitignore` that covers `node_modules`.
-- `backend/.gitignore` ignores `.env`; the landing page ignores `.env*.local`; `frontend/.gitignore` ignores neither, so **a `.env` added to `frontend/` would be committed**.
+- `backend/.gitignore` ignores `.env`; `frontend/.gitignore` does not, so **a `.env` added to `frontend/` would be committed**.

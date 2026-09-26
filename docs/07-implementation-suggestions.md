@@ -75,37 +75,31 @@ Use the existing `/api/cart` endpoints once authenticated, keep the localStorage
 
 ---
 
-## 4. Landing page duplicates a storefront page (review #45)
+## 4. Marketing pages have no SEO story (follows from the landing-page decision)
 
-Two implementations of the same IT Services page in two frameworks with two sets of contact details. **Choose deliberately — the repo does not record an intent.** See the comparison table in [01](./01-architecture.md#decision-point-the-landing-page-duplicates-a-storefront-page-review-45).
+The duplicate Next.js landing page was deleted in `f3c7b32` and `frontend/src/pages/Services/ItServices.jsx` is now canonical — that decision is settled. What it leaves open is the reason the Next version existed: the marketing pages now live in a client-rendered SPA with no prerendering and a single global `<title>`, so crawlers and link unfurlers see an empty shell on the pages whose entire job is inbound leads.
 
-### Option A — consolidate into the storefront, delete the Next app
+### Option A — prerender the static routes, stay on Vite
 
-Treat `frontend/` as the single web property. Port anything better from the Next version (copy, layout, iconography) into `pages/Services/ItServices.jsx` and remove `phil-s-it-consult-landing-page/` from the repo (tag the commit first so the design isn't lost).
+Add build-time prerendering for the handful of content routes (`/`, `/services/it-services`, `/services/creative-studio`) and per-route `<head>` tags via `react-helmet-async` or equivalent, so each ships real HTML and its own title/description/OG tags.
 
-- **Trade-off:** one deployment, one build, one place to change a phone number, and the marketing page can link straight into `/shop` with a shared header, cart and session. It also removes the pnpm/npm split and the dead shadcn scaffolding. The cost is losing Next's SSR/metadata advantages — a Vite SPA is weaker for SEO and social previews on a page whose whole purpose is inbound marketing, and the storefront currently has no prerendering story at all.
+- **Trade-off:** a day of work, no change to the architecture, and it covers the marketing pages properly. It does not help `/shop/:id`, whose content is per-product and comes from the API — those pages stay invisible to crawlers unless you prerender at build time from the catalogue, which then goes stale between deploys.
 
-### Option B — keep both, with an explicit boundary
+### Option B — move to a framework with SSR later
 
-The Next app becomes the public marketing site at the apex domain; the storefront lives at `shop.` or `/shop` behind a proxy. Write down the boundary (marketing copy and lead capture in Next; catalogue, cart and account in the SPA), fix the Next app's dead links so they point at absolute storefront URLs, and extract the shared contact details into one source of truth.
+Revisit only if organic search on *product* pages becomes a business requirement.
 
-- **Trade-off:** keeps SSR where SEO matters and lets the marketing page ship independently of the storefront. The cost is two deployments, two dependency trees to patch, two Tailwind configs, and a standing duplication risk — the two copies of this page have already diverged on contact details, and nothing prevents that from recurring. Only worth it if marketing SEO is a real priority.
+- **Trade-off:** properly solves catalogue SEO and image optimisation, but it is a rewrite of every page and both contexts. Far too large to take on before auth, checkout and cart work. Listed so the option is on the record, not recommended now.
 
-### Option C — migrate the storefront to Next
-
-Fold the Vite SPA into the Next app as additional routes.
-
-- **Trade-off:** best long-term answer if SEO on product pages matters (server-rendered catalogue pages, per-product metadata, image optimisation). But it is a rewrite of every page and both contexts, and it is far too large to take on before auth, checkout and cart are working. Listed for completeness; not recommended now.
-
-**Recommendation:** decide between A and B before touching either page again. If there is no concrete SEO requirement, A is materially cheaper. In both cases, fix the placeholder contact details (`+233 24 000 0000`, `hello@philsitconsult.com`) and reconcile them with the storefront's `030 397 2421` — today the two sites tell customers different things.
+**Recommendation:** A if marketing SEO matters at all in the next few months; otherwise do nothing and revisit. Separately, reconcile contact details across the site — `Navbar` shows `030 397 2421` and the service pages carry placeholders (`+233 24 000 0000`, `hello@philsitconsult.com`) inherited from the design draft, so the site currently tells customers two different things.
 
 ---
 
-## 5. Contact forms discard every lead (review #43, #44)
+## 5. Contact forms discard every lead (review #43)
 
-Three forms — `ItServices.jsx`, `CreativeStudio.jsx` and the landing page — collect exactly the six fields `POST /api/service_requests` expects and throw them away. This is the highest business impact per hour of work in the whole list: the backend, the table and the notification email all already exist.
+Both service-page forms — `ItServices.jsx` and `CreativeStudio.jsx` — collect exactly the six fields `POST /api/service_requests` expects and throw them away. This is the highest business impact per hour of work in the whole list: the backend, the table and the notification email all already exist.
 
-- **Approach:** make the inputs controlled, POST to `/api/service_requests` (camelCase body: `companyName`, `contactPerson`, `email`, `phone`, `serviceType`, `message`), and only then show the thank-you state; on failure show an error and keep the entered values. For the landing page this also means introducing an API base URL (`NEXT_PUBLIC_API_URL`) into a project that currently has no configuration at all — or, if you take section 4 Option A, the problem disappears with the app.
+- **Approach:** make the inputs controlled, POST to `/api/service_requests` (camelCase body: `companyName`, `contactPerson`, `email`, `phone`, `serviceType`, `message`), and only then show the thank-you state; on failure show an error and keep the entered values.
 - **Harden the endpoint at the same time:** it is a public, unauthenticated write with no validation and no rate limit. Add field validation, a basic rate limit (`express-rate-limit`), and escape the values interpolated into the notification email's HTML (review #11). Also decide what a failed email send should do — today the row is committed and the client still gets a 500, so the business sees a "failure" for a request that was in fact stored.
 
 ---
@@ -124,7 +118,7 @@ Three forms — `ItServices.jsx`, `CreativeStudio.jsx` and the landing page — 
 | No migrations | Adopt node-pg-migrate or Knex; convert the current `createTables` into an initial migration | Required before any schema change reaches an existing database |
 | `reviews` orphan table | Controller + routes + a `review_count`/`avg_rating` aggregate on product reads | Would make `Products.jsx`'s existing `(0)` rating real |
 | Missing `products.old_price` | Add the column, or drop the discount UI | Decide which — the UI is currently dead either way |
-| `/services/workspace-transformation` | Build the page, or remove the links | Two dead links today |
+| `/services/workspace-transformation` | Build the page, or remove the link | Dead link in `CreativeStudio.jsx` |
 | Hardcoded service names in `ServicesNav` (#47) | Add a `slug` column to `services` and route on it | Removes a silent failure when a row is renamed |
 | Hardcoded API URL (#28) | `import.meta.env.VITE_API_URL` with a localhost fallback | Prerequisite for any deployment |
 | No `.env.example` (#26) | Commit one for `backend/` from the table in [06](./06-setup.md) | Ten minutes, high value for onboarding |
@@ -140,7 +134,7 @@ Three forms — `ItServices.jsx`, `CreativeStudio.jsx` and the landing page — 
 2. **Upload reorder + multer limits + the `authenticate` header guard** (section 6, first two rows). Minutes of work, highest severity.
 3. **Section 5** — wire the contact forms to the endpoint that already exists. Highest business value per hour.
 4. **Section 3 Option A** — localStorage cart. Cheap, independent, fixes the most visible everyday bug.
-5. **Section 4** — decide consolidate vs. keep-both *before* editing either copy of the IT Services page again.
+5. **Section 4 Option A** — prerendering and per-route metadata, if marketing SEO matters; otherwise skip.
 6. **Section 1 Option B** — auth (login/register, interceptor, rehydration, guards) without the admin surface.
 7. **Section 2** — checkout with server-computed totals and real `order_items`, plus the ownership fixes.
 8. **Section 1 Option A remainder** — the admin surface, products and featured slides first.

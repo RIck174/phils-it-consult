@@ -20,7 +20,7 @@ Every `api.*` call goes through `src/utils/api.js`, whose base URL is hardcoded 
 | `POST /api/auth/register`, `POST /api/auth/login` | **nobody** — `Auth` is a stub |
 | all `/api/cart` | **nobody** — cart is in React memory |
 | all `/api/orders` | **nobody** — no checkout |
-| `POST /api/service_requests` | **nobody** — all three contact forms discard input |
+| `POST /api/service_requests` | **nobody** — both contact forms discard input |
 | all admin writes (products, categories, services, slides, upload, request status) | **nobody** — `Admin` is a stub |
 
 ---
@@ -127,9 +127,8 @@ pages/Services/ItServices.jsx
   ├── imports: react, react-icons/fi
   ├── calls: —
   ├── form fields: company, contact, email, phone, service, message
-  ├── MISSING (endpoint): POST /api/service_requests — exists and expects exactly
-  │        { companyName, contactPerson, email, phone, serviceType, message }; every lead is dropped
-  └── duplicated by: phil-s-it-consult-landing-page/components/it-services-page.tsx
+  └── MISSING (endpoint): POST /api/service_requests — exists and expects exactly
+           { companyName, contactPerson, email, phone, serviceType, message }; every lead is dropped
 
 pages/Services/CreativeStudio.jsx
   ├── imports: react, react-icons/fi,
@@ -262,41 +261,6 @@ components/PcShowcase.jsx               [UNUSED — dead file, nothing imports i
 
 ---
 
-## Landing page (`phil-s-it-consult-landing-page/`)
-
-```
-app/layout.tsx
-  ├── imports: app/globals.css, next/font (Geist, Geist_Mono), @vercel/analytics/next
-  ├── calls: —
-  └── metadata.generator = "v0.app"  (indicates the page was produced by a design tool)
-
-app/page.tsx
-  ├── imports: components/it-services-page.tsx
-  └── calls: —
-
-components/it-services-page.tsx         [the whole site, one client component]
-  ├── imports: react (useState), lucide-react icons
-  ├── calls: NONE
-  ├── form fields: company, contact person, email, phone, service type, message
-  │        — identical in shape to POST /api/service_requests
-  ├── MISSING (endpoint): POST /api/service_requests; handleSubmit only setSubmitted(true)
-  ├── MISSING (route): /services/creative-studio — linked, does not exist in this Next app
-  ├── MISSING (route): /services/workspace-transformation — linked, does not exist anywhere
-  ├── MISSING (config): no API base URL / env var exists in this project at all
-  ├── placeholder data: +233 24 000 0000, hello@philsitconsult.com
-  └── duplicates: frontend/src/pages/Services/ItServices.jsx  (see 01-architecture.md)
-
-components/ui/button.tsx                [UNUSED]
-  ├── imports: @radix-ui/react-slot, class-variance-authority, lib/utils.ts
-  └── nothing imports it
-
-lib/utils.ts                            [UNUSED]
-  ├── imports: clsx, tailwind-merge
-  └── exports cn(); nothing imports it
-```
-
----
-
 ## Consolidated list of missing things
 
 ### Missing files / casing
@@ -311,8 +275,7 @@ lib/utils.ts                            [UNUSED]
 | Route | Referenced by |
 | --- | --- |
 | `/checkout` | `pages/Cart/index.jsx` |
-| `/services/workspace-transformation` | `CreativeStudio.jsx`, landing page |
-| `/services/creative-studio` **within the Next app** | landing page |
+| `/services/workspace-transformation` | `CreativeStudio.jsx` |
 | `*` catch-all / 404 page | `App.jsx` |
 | `GET /api/auth/me` (endpoint, not route) | needed by any real auth UI |
 
@@ -328,7 +291,7 @@ lib/utils.ts                            [UNUSED]
 
 | Backend capability | Frontend state |
 | --- | --- |
-| `POST /api/service_requests` (+ email notification) | three forms discard their input |
+| `POST /api/service_requests` (+ email notification) | both service-page forms discard their input |
 | `/api/cart` CRUD | cart is memory-only |
 | `/api/orders` | no checkout |
 | `/api/auth` | `Auth` stub, no token interceptor |

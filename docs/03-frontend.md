@@ -1,6 +1,6 @@
 # 3. Frontend pages and components
 
-Covers `frontend/` (Vite + React 19 SPA) and `phil-s-it-consult-landing-page/` (Next.js). Import/endpoint trees for each of these live in [04-dependency-map.md](./04-dependency-map.md); this document describes purpose, props and state.
+Covers every page, component and context in `frontend/` (Vite + React 19 SPA). Import/endpoint trees for each file live in [04-dependency-map.md](./04-dependency-map.md); this document describes purpose, props and state.
 
 ## Application shell
 
@@ -159,18 +159,6 @@ Same structure and the same discarding form, for creative services. State: `subm
 | `HeroTextCard.jsx` | none | none | Static hero text block. **UNUSED** — not imported anywhere (dead file) |
 | `ItServicesCard.jsx` | none | none | Static "IT problems we solve" card linking to `/services/it-services`. **UNUSED** — dead file |
 | `PcShowcase.jsx` | none | none | Three autoplaying `<video>` cards from `public/videos/*.mp4` linking to `/shop`. **UNUSED** — dead file, and the only consumer of those video assets |
-
-## Landing page (`phil-s-it-consult-landing-page/`)
-
-| File | Props | State | Purpose |
-| --- | --- | --- | --- |
-| `app/layout.tsx` | `children` | none | Root layout: `metadata` (title "Phil's-IT Consult \| Professional IT Services", description, `generator: 'v0.app'`), viewport, Geist fonts, `globals.css`, `<Analytics />` from `@vercel/analytics/next` |
-| `app/page.tsx` | none | none | Renders `<ItServicesPage />`. The only route in the app |
-| `components/it-services-page.tsx` | none | `submitted` | **The entire landing page** as one client component (~700 lines): header, hero, services grid, "why us", request form, footer. `handleSubmit` does `preventDefault()` + `setSubmitted(true)` — **no backend call**, leads discarded (review #44). Contact details are placeholders (`+233 24 000 0000`, `hello@philsitconsult.com`). Links to `/services/creative-studio` and `/services/workspace-transformation`, **neither of which exists in this app** (review #48) |
-| `components/ui/button.tsx` | shadcn `Button` props | none | shadcn/ui scaffold. **UNUSED** |
-| `lib/utils.ts` | — | — | `cn()` class merger. **UNUSED** |
-
-There are no other components, no contexts, no API client and no state management in the landing page. It duplicates `frontend/src/pages/Services/ItServices.jsx` — see the decision point in [01](./01-architecture.md#decision-point-the-landing-page-duplicates-a-storefront-page-review-45).
 
 ## Cross-cutting frontend gaps
 

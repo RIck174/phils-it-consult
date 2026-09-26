@@ -1,42 +1,38 @@
 # 1. Architecture overview
 
-## The three applications
+## The two applications
 
 ```
 phils-it-consult/
-├── backend/                          Express 5 + PostgreSQL REST API      (CommonJS, npm)
-├── frontend/                         Vite + React 19 storefront SPA       (ESM, npm)
-└── phil-s-it-consult-landing-page/   Next.js 16 marketing page            (App Router, pnpm)
+├── backend/    Express 5 + PostgreSQL REST API   (CommonJS, npm)
+└── frontend/   Vite + React 19 storefront SPA    (ESM, npm)
 ```
 
-Each folder is an independent project with its own `package.json`, its own lockfile and its own dependency tree. There is no root `package.json`, no workspace configuration and no shared code, types or lint config between them. They are three deployables that happen to share a git repository.
+Each folder is an independent project with its own `package.json`, its own lockfile and its own dependency tree. There is no root `package.json`, no workspace configuration and no shared code, types or lint config between them.
+
+> A third folder, `phil-s-it-consult-landing-page/` (a Next.js marketing page), existed until commit `f3c7b32` and was removed as an unused experiment. **`frontend/src/pages/Services/ItServices.jsx` is the canonical IT Services page.** Noted here only because the Next version is still reachable in git history.
 
 ## How they relate at runtime
 
 ```
-        Browser
-           │
-           ├──────────────► frontend/  (Vite dev server :5173)
-           │                    │
-           │                    │ axios, baseURL hardcoded to
-           │                    │ http://localhost:5000/api          ← review #28
-           │                    ▼
-           │                backend/  (Express :5000) ──► PostgreSQL
-           │                    ▲                          (tables created at boot
-           │                    │                           by src/models/index.js)
-           │                    │
-           │                    └── Cloudinary (image uploads)
-           │                    └── Gmail SMTP via nodemailer (service-request notifications)
-           │
-           └──────────────► phil-s-it-consult-landing-page/  (Next :3000)
-                                │
-                                └── (no backend calls at all)     ← review #44
+  Browser
+     │
+     └───────► frontend/  (Vite dev server :5173)
+                   │
+                   │ axios, baseURL hardcoded to
+                   │ http://localhost:5000/api          ← review #28
+                   ▼
+               backend/  (Express :5000) ──► PostgreSQL
+                   ▲                          (tables created at boot
+                   │                           by src/models/index.js)
+                   │
+                   ├── Cloudinary (image uploads)
+                   └── Gmail SMTP via nodemailer (service-request notifications)
 ```
 
-- **frontend → backend** is the only wired-up integration. It is one-directional HTTP/JSON, unauthenticated in practice (no token is ever attached to a request — see [03](./03-frontend.md#authcontext)).
-- **landing page → backend** does not exist. Its contact form has the exact shape that `POST /api/service_requests` expects but calls `setSubmitted(true)` and discards the data.
+- **frontend → backend** is the only integration. It is one-directional HTTP/JSON, and unauthenticated in practice — no token is ever attached to a request (see [03](./03-frontend.md#authcontext)).
 - **backend → external**: Cloudinary (`src/utils/cloudinary.js`) for image hosting and Gmail (`src/utils/sendEmail.js`) for notifying the business of a new service request.
-- There is no shared database between the landing page and the API, no SSR proxying, and no reverse proxy config in the repo.
+- There is no SSR and no API proxying through Vite — the SPA calls the API's origin directly, which is why CORS is enabled on the backend.
 
 ## Request flow, storefront page load
 
@@ -65,36 +61,16 @@ There is no service layer, no validation layer, no central error handler and no 
 
 A single-page storefront. Routing in `App.jsx`, global state in two React contexts (`AuthContext`, `CartContext`), HTTP through one axios instance (`src/utils/api.js`), styling with Tailwind v4 via `@tailwindcss/vite`. Pages live in `src/pages/<Name>/index.jsx` (except the two service detail pages, which are files inside `src/pages/Services/`), reusable pieces in `src/components/`.
 
-### `phil-s-it-consult-landing-page/`
+## Marketing pages live in the storefront
 
-A Next.js App Router project with exactly one route (`/`), which renders one client component (`components/it-services-page.tsx`). It carries shadcn/ui scaffolding (`components.json`, `components/ui/button.tsx`, `lib/utils.ts`) that nothing imports, and `@vercel/analytics` wired into the layout. `next.config.mjs` sets `typescript.ignoreBuildErrors: true`.
+The IT Services and Creative Studio marketing pages are routes inside the SPA (`/services/it-services`, `/services/creative-studio`), rendered by `frontend/src/pages/Services/ItServices.jsx` and `CreativeStudio.jsx`. They inherit the storefront `Navbar` and `Footer` and are what `ServicesNav`, `ServicesSpotlightSection` and `ItServicesCard` link to. This is the canonical home for marketing content.
 
-## Decision point: the landing page duplicates a storefront page (review #45)
+Two consequences follow from marketing living in a client-rendered SPA, neither of them addressed today:
 
-**This is flagged as an unresolved decision, not as an established intent.** Nothing in the repo states which of the two is canonical.
+- **SEO and social previews are weak.** There is no prerendering and no per-route metadata — every route serves the same empty `index.html` shell and a single `<title>`. For pages whose whole purpose is inbound leads, that is worth a deliberate decision: cheapest is prerendering the handful of static routes at build time (`vite-plugin-ssg`/`vite-plugin-prerender`) plus per-route `<head>` tags; most thorough is moving to a framework with SSR, which is a rewrite.
+- **The contact forms on both service pages discard every submission** (review #43), even though `POST /api/service_requests` already stores the request and emails the business. See [07](./07-implementation-suggestions.md#5-contact-forms-discard-every-lead-review-43).
 
-The same "IT Services" marketing page exists twice:
-
-| | `frontend/src/pages/Services/ItServices.jsx` | `phil-s-it-consult-landing-page/` |
-| --- | --- | --- |
-| Stack | React 19 + Vite + Tailwind v4 | Next 16 App Router + Tailwind v4 + shadcn |
-| Icons | `react-icons/fi` | `lucide-react` |
-| Route | `/services/it-services` inside the SPA | `/` of a separate deployment |
-| Layout | Inherits storefront `Navbar` + `Footer` | Own header + footer |
-| Contact phone | `030 397 2421` (storefront `Navbar`) | `+233 24 000 0000` (placeholder) |
-| Contact email | not shown | `hello@philsitconsult.com` (placeholder) |
-| Form | 6 fields, submits nowhere | same 6 fields, submits nowhere |
-| Sibling links | `/services/creative-studio` (exists) | `/services/creative-studio`, `/services/workspace-transformation` (**neither route exists in the Next app**) |
-
-Both versions carry the same copy — the features list, the "Why Phil's-IT Consult" reasons and the request form are textually identical — so they have already begun to diverge only in styling and contact details, and any future copy change has to be made twice.
-
-Observations that bear on the decision:
-
-- The Next app's cross-links (`/services/creative-studio`, `/services/workspace-transformation`) resolve only in the *storefront's* URL space. As deployed standalone, both are 404s. That suggests the landing page was generated as a design exploration against the storefront's sitemap rather than as a self-contained site.
-- `generator: 'v0.app'` in `app/layout.tsx` indicates the landing page was produced by a design tool, which fits the "exploration" reading — but it is also a complete, well-structured page that could reasonably become the marketing front door.
-- The storefront version is the only one a user can currently reach through the product's own navigation (`ServicesNav`, `ServicesSpotlightSection`, `ItServicesCard` all link to `/services/it-services`).
-
-Three directions, with trade-offs, are set out in [07-implementation-suggestions.md](./07-implementation-suggestions.md#4-landing-page-duplicates-a-storefront-page-review-45). A decision is needed before either page is edited again.
+Related loose ends: `/services` itself (`pages/Services/index.jsx`) is a one-line stub, and `CreativeStudio.jsx` links to `/services/workspace-transformation`, which has no route.
 
 ## Known blockers
 
@@ -107,4 +83,4 @@ Three directions, with trade-offs, are set out in [07-implementation-suggestions
 
 ## Deployment shape (inferred, not configured)
 
-Nothing in the repo configures deployment — no Dockerfile, no `vercel.json`, no CI workflow, no `start` script in `backend/package.json`. A working deployment would need: the API on a Node host with a managed PostgreSQL instance, the storefront built to static assets behind a CDN with SPA fallback routing, the landing page on a Next-capable host (or folded into the storefront), and CORS on the API narrowed from `cors()` to the storefront origin.
+Nothing in the repo configures deployment — no Dockerfile, no CI workflow, no `start` script in `backend/package.json`. A working deployment would need: the API on a Node host with a managed PostgreSQL instance; the storefront built to static assets behind a CDN with SPA fallback routing (every unknown path must serve `index.html`, or deep links like `/shop/12` 404); the axios base URL moved to an env var; and CORS on the API narrowed from bare `cors()` to the storefront origin.

@@ -179,7 +179,7 @@ Mounted at `/api/service_requests` (underscore, unlike the hyphenated `featured-
 
 ### `POST /api/service_requests` — public
 
-The endpoint the three contact forms in the repo *should* be calling and none currently do (review #44).
+The endpoint both service-page contact forms *should* be calling and neither currently does (review #43).
 
 ```jsonc
 {
