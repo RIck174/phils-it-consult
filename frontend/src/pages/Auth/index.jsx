@@ -25,6 +25,24 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import api from "../../utils/api";
 
+const decodeJwtPayload = (token) => {
+  try {
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error("Failed to decode JWT payload:", e);
+    return null;
+  }
+};
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -63,11 +81,9 @@ const Auth = () => {
         const { token, message } = response.data;
 
         let userData = { email: formData.email };
-        try {
-          const payload = JSON.parse(atob(token.split(".")[1]));
+        const payload = decodeJwtPayload(token);
+        if (payload) {
           userData = { ...userData, id: payload.id, role: payload.role };
-        } catch (e) {
-          // Fallback if parsing fails
         }
 
         login(userData, token);
@@ -103,11 +119,9 @@ const Auth = () => {
           });
           const { token } = loginRes.data;
           let userData = { name: formData.name, email: formData.email };
-          try {
-            const payload = JSON.parse(atob(token.split(".")[1]));
+          const payload = decodeJwtPayload(token);
+          if (payload) {
             userData = { ...userData, id: payload.id, role: payload.role };
-          } catch (e) {
-            // Fallback
           }
 
           login(userData, token);
