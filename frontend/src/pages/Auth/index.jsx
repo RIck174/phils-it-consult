@@ -7,7 +7,6 @@ import {
   FiUser,
   FiEye,
   FiEyeOff,
-  FiTerminal,
   FiSun,
   FiMoon,
   FiCpu,
@@ -17,7 +16,11 @@ import {
   FiAlertCircle,
   FiArrowRight,
   FiKey,
-  FiCheck
+  FiShoppingCart,
+  FiServer,
+  FiPackage,
+  FiTruck,
+  FiHardDrive
 } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../utils/api";
@@ -68,7 +71,7 @@ const Auth = () => {
         }
 
         login(userData, token);
-        setSuccessMsg(message || "Authentication successful. Access granted.");
+        setSuccessMsg(message || "Authentication successful. Welcome back!");
 
         setTimeout(() => {
           navigate("/");
@@ -108,7 +111,7 @@ const Auth = () => {
           }
 
           login(userData, token);
-          setSuccessMsg("Account created! Access token issued. Redirecting...");
+          setSuccessMsg("Account created! Access granted. Redirecting to store...");
           setTimeout(() => {
             navigate("/");
           }, 1000);
@@ -121,7 +124,7 @@ const Auth = () => {
       console.error(err);
       const msg =
         err.response?.data?.message ||
-        "Authentication server error. Check network and parameters.";
+        "Authentication server error. Please check your network and credentials.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -164,7 +167,7 @@ const Auth = () => {
       </div>
 
       <div className="relative w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10">
-        {/* Left Side: Tech Showcase Card */}
+        {/* Left Side: Tech Store & IT Services Showcase Card */}
         <div
           className={`lg:col-span-5 flex flex-col justify-between space-y-8 p-6 lg:p-8 rounded-2xl border backdrop-blur-md shadow-2xl relative overflow-hidden transition-colors ${
             isDarkMode
@@ -172,26 +175,26 @@ const Auth = () => {
               : "bg-white/90 border-slate-200 text-slate-800"
           }`}
         >
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400" />
 
           <div>
             <div className="flex items-center justify-between mb-6">
               <div
                 className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono border ${
                   isDarkMode
-                    ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
-                    : "bg-cyan-50 text-cyan-700 border-cyan-200"
+                    ? "bg-blue-500/10 text-cyan-400 border-cyan-500/20"
+                    : "bg-blue-50 text-blue-700 border-blue-200"
                 }`}
               >
-                <FiCpu className="animate-spin-slow" />
-                <span>DEV_PLATFORM v2.4</span>
+                <FiShoppingCart />
+                <span>PHIL'S-IT STORE v2.0</span>
               </div>
 
               {/* Dark/Light mode toggle */}
               <button
                 type="button"
                 onClick={() => setIsDarkMode(!isDarkMode)}
-                className={`p-2 rounded-lg border transition-all ${
+                className={`p-2 rounded-lg border transition-all cursor-pointer ${
                   isDarkMode
                     ? "border-slate-700 bg-slate-800 text-yellow-400 hover:bg-slate-700"
                     : "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -203,61 +206,64 @@ const Auth = () => {
             </div>
 
             <h1 className="text-3xl font-extrabold tracking-tight mb-3">
-              Developer Portal <span className="text-cyan-500">&</span> SaaS Suite
+              Hardware, Accessories <span className="text-blue-500">&</span> IT Services
             </h1>
             <p
               className={`text-sm leading-relaxed mb-6 ${
                 isDarkMode ? "text-slate-400" : "text-slate-600"
               }`}
             >
-              Empowering next-gen IT solutions, cloud infrastructure, and enterprise workflows. Connect your API workspace seamlessly.
+              Sign in to manage your gear orders, request IT consultation, track hardware deliveries, and unlock tech store member perks.
             </p>
 
-            {/* Interactive Terminal Accent Component */}
+            {/* Interactive Hardware & System Status Terminal Component */}
             <div className="rounded-lg bg-slate-950 border border-slate-800 p-4 font-mono text-xs shadow-inner">
               <div className="flex items-center gap-1.5 mb-3 border-b border-slate-800/80 pb-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
                 <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
                 <span className="ml-2 text-slate-500 text-[10px]">
-                  bash — auth.service.js
+                  system — phils-store.status
                 </span>
               </div>
               <div className="space-y-1.5 text-slate-300">
-                <p className="text-slate-500">$ phil-cli auth --status</p>
+                <p className="text-slate-500">$ store-cli status --inventory</p>
                 <p className="text-emerald-400">
-                  ✔ Security protocols active (OAuth2 / JWT)
+                  ✔ Laptops, Workstations & Gaming PCs in stock
                 </p>
                 <p className="text-cyan-400">
-                  ⚡ API Gateway: 99.99% Uptime
+                  ⚡ Nationwide Express Delivery Active
                 </p>
                 <p className="text-slate-400">
-                  &gt; Mode:{" "}
+                  &gt; Portal Mode:{" "}
                   <span className="text-amber-300">
-                    {isLogin ? "USER_SIGN_IN" : "REGISTER_NEW_USER"}
+                    {isLogin ? "CUSTOMER_SIGN_IN" : "REGISTER_NEW_CLIENT"}
                   </span>
                 </p>
               </div>
             </div>
           </div>
 
-          {/* SaaS Highlights */}
+          {/* Tech Store Highlights */}
           <div className="space-y-3 pt-2">
             {[
-              "End-to-end encrypted user tokens",
-              "Instant IT & Cloud service access",
-              "Developer dashboard & hardware shop",
-            ].map((feature, i) => (
-              <div
-                key={i}
-                className={`flex items-center gap-2 text-xs font-mono ${
-                  isDarkMode ? "text-slate-400" : "text-slate-600"
-                }`}
-              >
-                <FiCheckCircle className="text-cyan-500 shrink-0" />
-                <span>{feature}</span>
-              </div>
-            ))}
+              { text: "Verified Genuine Tech Hardware & Accessories", icon: FiPackage },
+              { text: "Express Shipping & Order Tracking", icon: FiTruck },
+              { text: "24/7 Professional IT Consulting & Support", icon: FiServer },
+            ].map((item, i) => {
+              const IconComp = item.icon;
+              return (
+                <div
+                  key={i}
+                  className={`flex items-center gap-2 text-xs font-mono ${
+                    isDarkMode ? "text-slate-400" : "text-slate-600"
+                  }`}
+                >
+                  <IconComp className="text-blue-500 shrink-0" />
+                  <span>{item.text}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -278,8 +284,8 @@ const Auth = () => {
                 </h2>
                 <p className="text-xs text-slate-500 font-mono mt-1">
                   {isLogin
-                    ? "Enter credentials to access your environment"
-                    : "Register to unlock developer tools and services"}
+                    ? "Sign in to access your tech orders and services"
+                    : "Register to start shopping tech gear and request IT services"}
                 </p>
               </div>
 
@@ -294,7 +300,7 @@ const Auth = () => {
                 <button
                   type="button"
                   onClick={() => switchMode(true)}
-                  className={`relative px-4 py-1.5 text-xs font-mono font-medium rounded-lg transition-colors ${
+                  className={`relative px-4 py-1.5 text-xs font-mono font-medium rounded-lg transition-colors cursor-pointer ${
                     isLogin
                       ? "text-white"
                       : isDarkMode
@@ -305,7 +311,7 @@ const Auth = () => {
                   {isLogin && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-indigo-600 rounded-lg"
+                      className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg"
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                   )}
@@ -317,7 +323,7 @@ const Auth = () => {
                 <button
                   type="button"
                   onClick={() => switchMode(false)}
-                  className={`relative px-4 py-1.5 text-xs font-mono font-medium rounded-lg transition-colors ${
+                  className={`relative px-4 py-1.5 text-xs font-mono font-medium rounded-lg transition-colors cursor-pointer ${
                     !isLogin
                       ? "text-white"
                       : isDarkMode
@@ -328,7 +334,7 @@ const Auth = () => {
                   {!isLogin && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-indigo-600 rounded-lg"
+                      className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg"
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                   )}
@@ -351,7 +357,7 @@ const Auth = () => {
                   <FiAlertCircle size={18} className="shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="font-semibold uppercase tracking-wider mb-0.5">
-                      Authentication Failure
+                      Authentication Error
                     </p>
                     <p>{error}</p>
                   </div>
@@ -401,11 +407,11 @@ const Auth = () => {
                       required={!isLogin}
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="e.g. Alex Turing"
+                      placeholder="e.g. Alex Johnson"
                       className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm font-sans focus:outline-none transition-all ${
                         isDarkMode
-                          ? "bg-slate-950/80 border-slate-800 focus:border-cyan-500 text-slate-100 placeholder-slate-600"
-                          : "bg-slate-50 border-slate-300 focus:border-cyan-600 text-slate-900 placeholder-slate-400"
+                          ? "bg-slate-950/80 border-slate-800 focus:border-blue-500 text-slate-100 placeholder-slate-600"
+                          : "bg-slate-50 border-slate-300 focus:border-blue-600 text-slate-900 placeholder-slate-400"
                       }`}
                     />
                   </div>
@@ -426,11 +432,11 @@ const Auth = () => {
                     required
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="developer@company.com"
+                    placeholder="client@techstore.com"
                     className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm font-sans focus:outline-none transition-all ${
                       isDarkMode
-                        ? "bg-slate-950/80 border-slate-800 focus:border-cyan-500 text-slate-100 placeholder-slate-600"
-                        : "bg-slate-50 border-slate-300 focus:border-cyan-600 text-slate-900 placeholder-slate-400"
+                        ? "bg-slate-950/80 border-slate-800 focus:border-blue-500 text-slate-100 placeholder-slate-600"
+                        : "bg-slate-50 border-slate-300 focus:border-blue-600 text-slate-900 placeholder-slate-400"
                     }`}
                   />
                 </div>
@@ -448,7 +454,7 @@ const Auth = () => {
                         e.preventDefault();
                         alert("Password reset feature coming soon!");
                       }}
-                      className="text-xs text-cyan-500 hover:underline font-mono"
+                      className="text-xs text-blue-500 hover:underline font-mono"
                     >
                       Forgot?
                     </a>
@@ -467,14 +473,14 @@ const Auth = () => {
                     placeholder="••••••••••••"
                     className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm font-sans focus:outline-none transition-all ${
                       isDarkMode
-                        ? "bg-slate-950/80 border-slate-800 focus:border-cyan-500 text-slate-100 placeholder-slate-600"
-                        : "bg-slate-50 border-slate-300 focus:border-cyan-600 text-slate-900 placeholder-slate-400"
+                        ? "bg-slate-950/80 border-slate-800 focus:border-blue-500 text-slate-100 placeholder-slate-600"
+                        : "bg-slate-50 border-slate-300 focus:border-blue-600 text-slate-900 placeholder-slate-400"
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 cursor-pointer"
                   >
                     {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                   </button>
@@ -504,8 +510,8 @@ const Auth = () => {
                       placeholder="••••••••••••"
                       className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm font-sans focus:outline-none transition-all ${
                         isDarkMode
-                          ? "bg-slate-950/80 border-slate-800 focus:border-cyan-500 text-slate-100 placeholder-slate-600"
-                          : "bg-slate-50 border-slate-300 focus:border-cyan-600 text-slate-900 placeholder-slate-400"
+                          ? "bg-slate-950/80 border-slate-800 focus:border-blue-500 text-slate-100 placeholder-slate-600"
+                          : "bg-slate-50 border-slate-300 focus:border-blue-600 text-slate-900 placeholder-slate-400"
                       }`}
                     />
                   </div>
@@ -516,7 +522,7 @@ const Auth = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 py-3 px-6 rounded-xl font-mono text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:opacity-95 shadow-lg shadow-cyan-500/20 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full mt-2 py-3 px-6 rounded-xl font-mono text-sm font-semibold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-95 shadow-lg shadow-blue-500/20 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
@@ -525,7 +531,7 @@ const Auth = () => {
                   </div>
                 ) : (
                   <>
-                    <span>{isLogin ? "INITIALIZE SESSION" : "REGISTER DEV ACCOUNT"}</span>
+                    <span>{isLogin ? "SIGN IN TO STORE" : "CREATE ACCOUNT"}</span>
                     <FiArrowRight size={16} />
                   </>
                 )}
@@ -547,7 +553,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => switchMode(!isLogin)}
-                className="text-cyan-500 hover:underline cursor-pointer"
+                className="text-blue-500 hover:underline cursor-pointer"
               >
                 {isLogin ? "Need an account? Register" : "Have an account? Login"}
               </button>
