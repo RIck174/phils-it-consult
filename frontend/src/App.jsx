@@ -7,8 +7,8 @@ import Shop from "./pages/Shop";
 import Cart from "./pages/Cart";
 import Navbar from "./components/Navbar";
 import FloatingCart from "./components/FloatingCart";
-import ItServices from "./pages/services/ItServices";
-import CreativeStudio from "./pages/services/CreativeStudio";
+import ItServices from "./pages/Services/ItServices";
+import CreativeStudio from "./pages/Services/CreativeStudio";
 import ProductDetail from "./pages/ProductDetail";
 import Footer from "./components/Footer";
 

@@ -7,7 +7,7 @@ import Tabs from "../../components/Tabs";
 import Products from "../../components/Products";
 import Categories from "../../components/Categories";
 import ServicesNav from "../../components/ServicesNav";
-import SpotlightCard from "../../components/SpotlightCard";
+import SpotlightCard from "../../components/spotlightCard";
 import FeaturedCollections from "../../components/FeaturedCollectections";
 import TrustBadges from "../../components/TrustBadges";
 import ServicesSpotlightSection from "../../components/ServicesSpotlightSection";
