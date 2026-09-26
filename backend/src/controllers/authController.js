@@ -5,22 +5,17 @@ const bcrypt = require("bcryptjs");
 const register = async (req, res) => {
   const { name, email, password } = req.body;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
   try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     await pool.query(
-      `
-            INSERT INTO users(name,email,password) 
-            Values($1,$2,$3)`,
+      `INSERT INTO users(name,email,password) Values($1,$2,$3)`,
       [name, email, hashedPassword],
     );
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    console.log("Failed to register new user");
-    res.status(500).json({
-      message: "Server failed to register new user",
-      err: error.message,
-    });
+    console.error(error);
+    res.status(500).json({ message: "Server failed to register new user" });
   }
 };
 
@@ -28,11 +23,9 @@ const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const userExits = await pool.query(
-      `
-        SELECT * FROM users WHERE email = $1`,
-      [email],
-    );
+    const userExits = await pool.query(`SELECT * FROM users WHERE email = $1`, [
+      email,
+    ]);
     const user = userExits.rows[0];
     if (!user) {
       return res
@@ -51,9 +44,10 @@ const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "2d" },
     );
-    res.status(200).json({ messages: "Welcome back", token });
+    res.status(200).json({ message: "Welcome back", token });
   } catch (error) {
-    res.status(500).json({ message: "Server error", err: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

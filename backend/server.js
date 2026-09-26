@@ -30,6 +30,17 @@ app.use(`/api/upload`, uploadRoute);
 app.use(`/api/featured-slides`, featuredSlidesRoutes);
 createTables();
 
+// 404 handler — catches any route that doesn't match one above
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+// Central error handler — must be last, must have 4 parameters
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ message: "Something went wrong" });
+});
+
 app.listen(PORT, () => {
-  console.log(`Sever is listening on port: ${PORT}`);
+  console.log(`Server is listening on port: ${PORT}`);
 });

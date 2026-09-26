@@ -6,11 +6,15 @@ const { authenticate, isAdmin } = require(`../middleware/auth`);
 
 router.post(
   `/`,
-  upload.single(`image`),
   authenticate,
   isAdmin,
+  upload.single(`image`),
   async (req, res) => {
     try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
       const result = await new Promise((resolve, reject) => {
         cloudinary.uploader
           .upload_stream({ folder: `phils-it` }, (error, result) => {
@@ -22,7 +26,7 @@ router.post(
 
       res.json({ url: result.secure_url });
     } catch (error) {
-      res.status(500).json({ message: "Upload failed", error: error.message });
+      res.status(500).json({ message: "Upload failed" });
     }
   },
 );
