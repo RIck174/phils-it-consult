@@ -27,10 +27,11 @@ const Products = ({ type }) => {
     }, 1500);
   };
 
+  const [isPaused, setIsPaused] = useState(false);
   const scrollRef = useRef(null);
   const scroll = (direction) => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: direction * 300, behavior: "smooth" });
+      scrollRef.current.scrollBy({ left: direction * 240, behavior: "smooth" });
     }
   };
   const [products, setProducts] = useState([]);
@@ -40,32 +41,59 @@ const Products = ({ type }) => {
       : type === "featured"
         ? "Hot Products"
         : type === "all"
-          ? "Gadgets"
+          ? "Featured Gadgets"
           : "Best Selling";
 
   const displayProducts =
-    type === "featured" || type === "hotdeals"
-      ? products.slice(0, 7)
-      : type === "all"
-        ? products.slice(0, 12)
-        : products;
+    type === "bestselling"
+      ? products.slice(0, 10)
+      : type === "featured" || type === "hotdeals"
+        ? products.slice(0, 8)
+        : type === "all"
+          ? products.slice(0, 12)
+          : products;
   const isCarousel = type === "bestselling";
   const isHotDeals = type === "hotdeals";
 
   useEffect(() => {
     const fetchProduct = async () => {
-      const response = await api.get(`/products`);
-      setProducts(response.data);
+      try {
+        const response = await api.get(`/products`);
+        if (response.data && response.data.length > 0) {
+          setProducts(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to load products", err);
+      }
     };
 
     fetchProduct();
   }, []);
 
+  // Autoscroll for Best Selling carousel
+  useEffect(() => {
+    if (!isCarousel || isPaused || displayProducts.length === 0) return;
+
+    const timer = setInterval(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 20) {
+          // Wrapped to end, jump smoothly back to the first product
+          scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          scrollRef.current.scrollBy({ left: 220, behavior: "smooth" });
+        }
+      }
+    }, 2800);
+
+    return () => clearInterval(timer);
+  }, [isCarousel, isPaused, displayProducts.length]);
+
   const CartButton = ({ product, size = 14, className = "" }) => (
     <button
       onClick={(e) => handleAdd(e, product)}
       disabled={product.stock_quantity <= 0}
-      className={`bg-violet-600 hover:bg-violet-700 text-white p-1.5 rounded-md transition disabled:bg-gray-300 disabled:cursor-not-allowed ${className}`}
+      className={`bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-md transition shadow-xs disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer ${className}`}
     >
       {added[product.id] ? (
         <FiCheck size={size} />
@@ -76,30 +104,34 @@ const Products = ({ type }) => {
   );
 
   return (
-    <div className="px-6 py-1">
-      <div className="mb-6 flex items-end justify-between">
+    <div className="py-2">
+      <div className="mb-4 flex items-end justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-          <div className="w-12 h-1 bg-gray-400 rounded-full mt-1"></div>
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+            {title}
+          </h2>
+          <div className="w-12 h-0.5 bg-blue-600 rounded-full mt-1.5"></div>
         </div>
         <div className="flex items-center gap-3">
           <Link
             to="/shop"
-            className="text-sm text-gray-600 hover:text-blue-800 font-medium flex items-center gap-1"
+            className="text-xs text-slate-600 hover:text-blue-600 font-semibold flex items-center gap-1 transition"
           >
-            Explore more <FiArrowRight size={14} />
+            Explore all <FiArrowRight size={13} />
           </Link>
           {isCarousel && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => scroll(-1)}
-                className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 hover:text-gray-700"
+                className="w-7 h-7 rounded-full border border-slate-300/80 bg-white hover:bg-slate-100 flex items-center justify-center text-slate-600 text-sm transition cursor-pointer shadow-xs"
+                aria-label="Previous"
               >
                 ‹
               </button>
               <button
                 onClick={() => scroll(1)}
-                className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 hover:text-gray-700"
+                className="w-7 h-7 rounded-full border border-slate-300/80 bg-white hover:bg-slate-100 flex items-center justify-center text-slate-600 text-sm transition cursor-pointer shadow-xs"
+                aria-label="Next"
               >
                 ›
               </button>
@@ -107,21 +139,104 @@ const Products = ({ type }) => {
           )}
         </div>
       </div>
+      {/* ── BESTSELLING: full-width dark horizontal strip ── */}
+      {isCarousel ? (
+        <div className="rounded-2xl bg-[#111827] border border-white/5 shadow-xl overflow-hidden">
+          <div
+            ref={scrollRef}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory divide-x divide-white/5"
+          >
+            {displayProducts.map((product, index) => {
+              const oldPrice = Number(product.old_price);
+              const hasDiscount = oldPrice > Number(product.price);
+              return (
+                <Link
+                  to={`/shop/${product.id}`}
+                  key={product.id}
+                  className="snap-start flex-shrink-0 w-56 sm:w-60 flex flex-col p-4 hover:bg-white/5 transition-colors duration-150 group"
+                >
+                  {/* rank + badge */}
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-3xl font-black text-white/80 leading-none tabular-nums">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="bg-orange-500 text-white text-[8px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wide">
+                      Best Seller
+                    </span>
+                  </div>
+
+                  {/* product image */}
+                  <div className="flex items-center justify-center h-28 mb-3">
+                    <img
+                      src={product.image_url || noImage}
+                      onError={(e) => (e.target.src = noImage)}
+                      alt={product.name}
+                      className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-200"
+                    />
+                  </div>
+
+                  {/* brand + name */}
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold truncate">
+                    {product.brand || "Phil's IT"}
+                  </p>
+                  <h3 className="text-xs font-semibold text-white line-clamp-2 leading-snug mt-0.5 min-h-[2rem]">
+                    {product.name}
+                  </h3>
+
+                  {/* pricing */}
+                  <div className="flex items-baseline gap-1.5 mt-1.5">
+                    {hasDiscount && (
+                      <span className="text-[11px] text-gray-500 line-through">
+                        GH₵{oldPrice.toFixed(2)}
+                      </span>
+                    )}
+                    <span className="text-sm font-bold text-white">
+                      GH₵{Number(product.price).toFixed(2)}
+                    </span>
+                  </div>
+
+                  {/* stars + cart */}
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-400 text-[11px]">★★★★★</span>
+                      <span className="text-[10px] text-gray-400">
+                        ({product.review_count || 150})
+                      </span>
+                    </div>
+                    <button
+                      onClick={(e) => handleAdd(e, product)}
+                      disabled={product.stock_quantity <= 0}
+                      className="w-7 h-7 rounded-md bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition disabled:bg-gray-600 disabled:cursor-not-allowed cursor-pointer shrink-0"
+                    >
+                      {added[product.id] ? (
+                        <FiCheck size={13} />
+                      ) : (
+                        <FiShoppingCart size={13} />
+                      )}
+                    </button>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
       <div
-        ref={scrollRef}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
         className={
-          isCarousel
-            ? "flex gap-0 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide bg-gradient-to-r from-[#050818] via-[#0d0f2e] to-[#1a1440] rounded-xl p-4"
-            : type === "featured" || isHotDeals
-              ? "flex gap-3"
-              : "grid gap-4 grid-cols-3 sm:grid-cols-4 md:grid-cols-6"
+          type === "featured" || isHotDeals
+            ? "flex gap-3.5 overflow-x-auto pb-2 scrollbar-none"
+            : "grid gap-3.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
         }
       >
         {displayProducts.map((product, index) => (
           <Link
             to={`/shop/${product.id}`}
             key={product.id}
-            className={`relative flex-shrink-0 flex flex-col ${isCarousel ? "snap-start w-52 p-3 border-r border-white/10" : "rounded-lg p-3 pb-2 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-200 border border-gray-200 bg-white"} ${type === "featured" || isHotDeals ? "w-48" : ""}`}
+            className={`relative flex-shrink-0 flex flex-col group rounded-xl p-3 pb-2 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border border-slate-200/80 bg-white ${type === "featured" || isHotDeals ? "w-44 sm:w-48" : ""}`}
           >
             {isHotDeals ? (
               <>
@@ -146,42 +261,10 @@ const Products = ({ type }) => {
                   <CartButton product={product} size={14} />
                 </div>
               </>
-            ) : isCarousel ? (
-              <>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-extrabold text-white">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <span className="bg-violet-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
-                    BEST SALE
-                  </span>
-                </div>
-                <div className="bg-white/5 rounded-lg mb-2 flex items-center justify-center h-24">
-                  <img
-                    src={product.image_url || noImage}
-                    onError={(e) => (e.target.src = noImage)}
-                    alt={product.name}
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
-                <h3 className="font-semibold text-xs text-white line-clamp-2 min-h-[2rem]">
-                  {product.name}
-                </h3>
-                <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-1">
-                  <span className="text-yellow-400">★★★★★</span>
-                  <span>(150)</span>
-                </div>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-sm font-bold text-white">
-                    GH₵{Number(product.price).toFixed(2)}
-                  </span>
-                  <CartButton product={product} size={12} />
-                </div>
-              </>
             ) : type === "all" ? (
               <>
                 {isNewProduct(product.created_at) && (
-                  <span className="absolute top-2 left-2 bg-violet-600 text-white text-[9px] font-bold px-2 py-0.5 rounded">
+                  <span className="absolute top-2 left-2 bg-blue-600 text-white text-[9px] font-bold px-2 py-0.5 rounded">
                     NEW
                   </span>
                 )}
@@ -254,6 +337,7 @@ const Products = ({ type }) => {
           </Link>
         ))}
       </div>
+      )}
     </div>
   );
 };

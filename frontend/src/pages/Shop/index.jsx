@@ -129,7 +129,7 @@ const Shop = () => {
   const sidebarItem = (active) =>
     `flex items-center gap-4 px-6 py-5 text-base border-l-4 transition shrink-0 whitespace-nowrap ${
       active
-        ? "border-[#0a355f] bg-blue-50 text-[#0a355f] font-semibold"
+        ? "border-blue-600 bg-blue-50 text-blue-600 font-semibold"
         : "border-transparent text-gray-700 hover:bg-gray-50"
     }`;
 
@@ -208,7 +208,7 @@ const Shop = () => {
               onClick={() => setSelectedBrand(null)}
               className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition ${
                 selectedBrand === null
-                  ? "bg-[#0a355f] text-white border-[#0a355f]"
+                  ? "bg-blue-600 text-white border-blue-600"
                   : "bg-white text-gray-600 hover:border-gray-400"
               }`}
             >
@@ -222,7 +222,7 @@ const Shop = () => {
                 }
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition ${
                   selectedBrand === brand
-                    ? "bg-[#0a355f] text-white border-[#0a355f]"
+                    ? "bg-blue-600 text-white border-blue-600"
                     : "bg-white text-gray-600 hover:border-gray-400"
                 }`}
               >
@@ -240,7 +240,7 @@ const Shop = () => {
               onClick={() => setSort(s.key)}
               className={`pb-3 text-sm whitespace-nowrap transition ${
                 sort === s.key
-                  ? "text-[#0a355f] font-semibold border-b-2 border-[#0a355f] -mb-px"
+                  ? "text-blue-600 font-semibold border-b-2 border-blue-600 -mb-px"
                   : "text-gray-500 hover:text-gray-800"
               }`}
             >
@@ -257,7 +257,7 @@ const Shop = () => {
             <p className="text-gray-600">No products match your filters.</p>
             <button
               onClick={clearFilters}
-              className="mt-3 text-sm font-semibold text-[#0a355f] underline"
+              className="mt-3 text-sm font-semibold text-blue-600 underline"
             >
               Clear filters
             </button>
@@ -269,6 +269,68 @@ const Shop = () => {
             ))}
           </div>
         )}
+
+        {/* ── Services Discovery Strip ── */}
+        <div className="mt-16 pt-10 border-t border-gray-200">
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">
+            More from Phil's-IT Consult
+          </p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Link
+              to="/services/it-services"
+              className="flex flex-col justify-between p-5 rounded-xl border border-gray-200 bg-white hover:border-blue-600 transition group shadow-sm"
+            >
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 block">IT Support & Helpdesk</span>
+                <h4 className="text-sm font-bold text-gray-900 mt-1 group-hover:text-blue-600 transition">
+                  Managed IT Services
+                </h4>
+                <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                  On-site repairs, computer maintenance, cybersecurity, and cloud backups for Accra offices.
+                </p>
+              </div>
+              <span className="mt-4 text-xs font-bold text-blue-600 inline-flex items-center gap-1">
+                Learn more →
+              </span>
+            </Link>
+
+            <Link
+              to="/services/workspace-transformation"
+              className="flex flex-col justify-between p-5 rounded-xl border border-gray-200 bg-white hover:border-cyan-600 transition group shadow-sm"
+            >
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-700 block">Office Infrastructure</span>
+                <h4 className="text-sm font-bold text-gray-900 mt-1 group-hover:text-cyan-700 transition">
+                  Workspace Transformation
+                </h4>
+                <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                  Structured cabling, high-density Wi-Fi, boardroom AV, and clean server rack installs.
+                </p>
+              </div>
+              <span className="mt-4 text-xs font-bold text-cyan-700 inline-flex items-center gap-1">
+                Learn more →
+              </span>
+            </Link>
+
+            <Link
+              to="/services/creative-studio"
+              className="flex flex-col justify-between p-5 rounded-xl border border-gray-200 bg-white hover:border-gray-900 transition group shadow-sm"
+            >
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600 block">Websites & Branding</span>
+                <h4 className="text-sm font-bold text-gray-900 mt-1 group-hover:text-gray-600 transition">
+                  Creative & Web Studio
+                </h4>
+                <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                  Custom business websites, e-commerce platforms, logos, and graphic design for your brand.
+                </p>
+              </div>
+              <span className="mt-4 text-xs font-bold text-gray-700 inline-flex items-center gap-1">
+                Learn more →
+              </span>
+            </Link>
+          </div>
+        </div>
       </main>
     </div>
   );

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import macbookImage from "../assets/TechStore.jpg";
 import headphonesImage from "../assets/headphone.jpg";
 import audioImage from "../assets/Headphone2.jpg";
@@ -39,42 +40,49 @@ const spotlightCards = [
 
 const SpotlightCard = ({ card, className = "" }) => {
   return (
-    <div
-      className={`relative rounded-2xl overflow-hidden flex flex-col justify-end p-4 ${className}`}
+    <Link
+      to="/shop"
+      className={`group relative rounded-2xl overflow-hidden flex flex-col justify-end p-4.5 sm:p-5 transition-transform duration-300 hover:scale-[1.01] shadow-xs hover:shadow-md cursor-pointer ${className}`}
     >
       <img
         src={card.image}
         alt={card.title}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/15"></div>
 
       <div className="relative z-10 text-white">
         {card.eyebrow && (
-          <p className="text-[10px] font-semibold uppercase tracking-wide opacity-90 mb-1">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-blue-400 mb-1">
             {card.eyebrow}
           </p>
         )}
-        <h3 className="font-bold text-base leading-tight max-w-[75%]">
+        <h3 className="font-extrabold text-base sm:text-lg leading-tight max-w-[85%]">
           {card.title}
         </h3>
         {card.subtitle && (
-          <p className="text-xs mt-1 opacity-90 max-w-[70%]">{card.subtitle}</p>
+          <p className="text-xs text-slate-200 mt-1 max-w-[80%] line-clamp-1">
+            {card.subtitle}
+          </p>
         )}
-        {card.price && <p className="text-xs mt-1 opacity-90">{card.price}</p>}
-        <button className="mt-3 text-xs font-semibold px-4 py-2 rounded-full bg-white text-gray-900 w-fit">
+        {card.price && (
+          <p className="text-xs font-semibold text-emerald-400 mt-1">
+            {card.price}
+          </p>
+        )}
+        <span className="inline-block mt-3 text-xs font-bold px-3.5 py-1.5 rounded-full bg-white text-slate-900 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200 shadow-xs">
           {card.buttonText}
-        </button>
+        </span>
       </div>
-    </div>
+    </Link>
   );
 };
 
 const SpotlightGrid = () => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full px-6 py-5">
-      <SpotlightCard card={spotlightCards[0]} className="h-72" />
-      <SpotlightCard card={spotlightCards[1]} className="h-72" />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+      <SpotlightCard card={spotlightCards[0]} className="h-64 sm:h-72" />
+      <SpotlightCard card={spotlightCards[1]} className="h-64 sm:h-72" />
       <div className="grid grid-rows-2 gap-4">
         <SpotlightCard card={spotlightCards[2]} className="h-32" />
         <SpotlightCard card={spotlightCards[3]} className="h-32" />

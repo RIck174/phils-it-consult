@@ -126,10 +126,45 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const getOrderStats = async (req, res) => {
+  try {
+    const month = await pool.query(`
+      SELECT
+        COUNT(DISTINCT o.id) AS orders,
+        COALESCE(SUM(oi.quantity), 0) AS units,
+        COALESCE(SUM(oi.quantity * oi.price), 0) AS revenue
+      FROM orders o
+      LEFT JOIN order_items oi ON oi.order_id = o.id
+      WHERE o.created_at >= date_trunc('month', CURRENT_DATE)
+        AND o.status <> 'cancelled'`);
+
+    const pending = await pool.query(
+      `SELECT COUNT(*) AS count FROM orders WHERE status = 'pending'`,
+    );
+
+    const recent = await pool.query(`
+      SELECT o.id, o.total_amount, o.status, o.created_at, u.name
+      FROM orders o
+      LEFT JOIN users u ON u.id = o.user_id
+      ORDER BY o.created_at DESC
+      LIMIT 5`);
+
+    res.json({
+      orders: Number(month.rows[0].orders),
+      units: Number(month.rows[0].units),
+      revenue: Number(month.rows[0].revenue),
+      pending: Number(pending.rows[0].count),
+      recent: recent.rows,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch order stats" });
+  }
+};
 module.exports = {
   createOrder,
   cancelOrder,
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  getOrderStats,
 };

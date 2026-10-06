@@ -42,15 +42,15 @@ const TrustBadges = () => {
         {badges.map(({ icon: Icon, title, text }) => (
           <div
             key={title}
-            className="bg-violet-50 rounded-xl p-3 flex flex-col gap-1"
+            className="bg-blue-50 rounded-xl p-3 flex flex-col gap-1"
           >
-            <Icon size={18} className="text-violet-600" />
+            <Icon size={18} className="text-blue-600" />
             <h3 className="text-xs font-bold text-gray-900 mt-0.5">{title}</h3>
             <p className="text-[11px] text-gray-500 leading-snug">{text}</p>
 
             <a
               href="#"
-              className="text-[11px] font-semibold text-violet-600 hover:text-violet-800 flex items-center gap-1 mt-0.5"
+              className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-0.5"
             >
               Learn More <FiArrowRight size={10} />
             </a>

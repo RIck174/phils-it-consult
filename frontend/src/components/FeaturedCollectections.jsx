@@ -33,11 +33,14 @@ const collections = [
 
 const FeaturedCollections = () => {
   return (
-    <div className="px-6 py-8">
+    <div className="py-2" bg-gray-500>
       <div className="mb-4 flex items-end justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">
-          Featured Collections
-        </h2>
+        <div>
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+            Featured Collections
+          </h2>
+          <div className="w-12 h-0.5 bg-blue-600 rounded-full mt-1.5"></div>
+        </div>
         <div className="flex items-center gap-3">
           <a
             href="/shop"
@@ -58,7 +61,7 @@ const FeaturedCollections = () => {
         {collections.map((item) => (
           <div
             key={item.title}
-            className="relative rounded-xl overflow-hidden p-4 h-24 flex flex-col justify-center bg-white border border-gray-100"
+            className="relative rounded-xl overflow-hidden p-4 h-24 flex flex-col justify-center bg-white shadow-sm border border-white/80 hover:shadow-md transition"
           >
             <div className="relative z-10 max-w-[65%]">
               <h3 className="font-bold text-sm text-gray-900">{item.title}</h3>
@@ -68,7 +71,7 @@ const FeaturedCollections = () => {
 
               <a
                 href="/shop"
-                className="text-xs text-violet-600 font-semibold mt-1.5 inline-flex items-center gap-1"
+                className="text-xs text-blue-600 font-semibold mt-1.5 inline-flex items-center gap-1"
               >
                 Explore Now <FiArrowRight size={11} />
               </a>

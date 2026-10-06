@@ -29,7 +29,7 @@ const Cart = () => {
         </p>
         <Link
           to="/shop"
-          className="inline-block bg-[#0a355f] text-white text-sm font-semibold px-6 py-3 rounded-full mt-6 hover:bg-[#0d4680] transition"
+          className="inline-block bg-blue-600 text-white text-sm font-semibold px-6 py-3 rounded-full mt-6 hover:bg-blue-700 transition"
         >
           Go to Shop
         </Link>
@@ -133,7 +133,7 @@ const Cart = () => {
 
           <button
             onClick={() => navigate("/checkout")}
-            className="w-full bg-[#0a355f] text-white text-sm font-semibold py-3 rounded-full mt-6 hover:bg-[#0d4680] transition"
+            className="w-full bg-blue-600 text-white text-sm font-semibold py-3 rounded-full mt-6 hover:bg-blue-700 transition"
           >
             Checkout
           </button>

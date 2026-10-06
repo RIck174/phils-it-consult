@@ -31,7 +31,7 @@ const ProductCard = ({ product }) => {
       <Link to={`/shop/${product.id}`} className="block">
         <div className="relative bg-gray-50 rounded-lg overflow-hidden mb-3">
           {badge && (
-            <span className="absolute top-2 left-2 z-10 text-[10px] font-bold uppercase tracking-wide bg-violet-600 text-white px-2.5 py-1 rounded-full">
+            <span className="absolute top-2 left-2 z-10 text-[10px] font-bold uppercase tracking-wide bg-blue-600 text-white px-2.5 py-1 rounded-full">
               {badge}
             </span>
           )}

@@ -6,12 +6,14 @@ const {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  getOrderStats,
 } = require("../controllers/orderController");
 const router = express.Router();
 
 router.post("/", authenticate, createOrder);
 router.delete("/:id", authenticate, cancelOrder);
 router.get("/", authenticate, isAdmin, getAllOrders);
+router.get("/stats", authenticate, isAdmin, getOrderStats);
 router.get("/:id", authenticate, getOrderById);
 router.put("/:id", authenticate, isAdmin, updateOrderStatus);
 

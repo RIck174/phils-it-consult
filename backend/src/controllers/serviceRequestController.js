@@ -24,8 +24,8 @@ const submitRequest = async (req, res) => {
         <p><strong>Message:</strong> ${message}</p>`,
     );
     res.status(201).json({ message: "Request sent" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to send request." });
+  } catch (emailError) {
+    console.error("Email failed:", emailError.message);
   }
 };
 

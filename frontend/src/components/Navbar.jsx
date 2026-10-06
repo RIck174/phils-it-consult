@@ -28,34 +28,45 @@ const Navbar = () => {
   };
 
   return (
-    <nav>
-      <div className="flex items-center gap-6 px-6 py-3 shadow-md bg-white">
-        <img
-          src={logo}
-          alt="PHILS-IT CONSULT"
-          className="h-16 rounded-full overflow-hidden"
-        />
-        <div className="font-semibold italic text-xl leading-tight">
-          <p style={{ color: "#1400C8" }}>PHIL'S-IT</p>
-          <p>CONSULT</p>
-        </div>
+    <nav className="bg-white border-b border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.05)] sticky top-0 z-40">
+      <div className="max-w-[1536px] mx-auto flex items-center justify-between gap-4 sm:gap-8 px-4 sm:px-8 lg:px-10 py-3">
+        {/* Brand Logo & Name */}
+        <Link to="/" className="flex items-center gap-3 shrink-0 group">
+          <img
+            src={logo}
+            alt="PHILS-IT CONSULT"
+            className="h-12 w-12 sm:h-13 sm:w-13 object-cover rounded-full border border-blue-100 shadow-xs group-hover:scale-105 transition-transform"
+          />
+          <div className="font-extrabold leading-tight">
+            <span className="text-blue-700 text-base sm:text-lg tracking-tight block">
+              PHIL'S-IT
+            </span>
+            <span className="text-slate-800 text-xs sm:text-sm tracking-wider uppercase font-bold block">
+              CONSULT
+            </span>
+          </div>
+        </Link>
 
-        <div className="flex items-center gap-2 text-sm whitespace-nowrap px-11">
-          <span>📞</span>
-          <div>
-            <p className="text-xs text-gray-500">Call Us on</p>
-            <p className="font-bold">030 397 2421</p>
+        {/* Support Phone - Directly on Navbar without rounded background */}
+        <div className="hidden lg:flex items-center gap-3 shrink-0 px-2">
+          <span className="text-xl">📞</span>
+          <div className="leading-tight">
+            <p className="text-xs text-slate-500 font-medium">Call Us on</p>
+            <p className="font-bold text-slate-900 text-sm tracking-tight">
+              030 397 2421
+            </p>
           </div>
         </div>
 
+        {/* Search Bar */}
         <form
           onSubmit={handleSearch}
-          className="flex-1 flex items-center border rounded-md overflow-hidden"
+          className="flex-1 max-w-xl flex items-center border border-slate-200 focus-within:border-blue-500 rounded-lg overflow-hidden bg-white transition"
         >
           <select
             value={catId}
             onChange={(e) => setCatId(e.target.value)}
-            className="py-2 px-3 border-r outline-none text-sm bg-gray-50"
+            className="py-1.5 px-2.5 border-r border-slate-200 outline-none text-xs bg-slate-50 text-slate-700 font-medium cursor-pointer"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
@@ -68,28 +79,41 @@ const Navbar = () => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for products..."
-            className="py-2 px-3 flex-1 text-sm outline-none"
+            placeholder="Search computers, services, parts..."
+            className="py-1.5 px-3 flex-1 text-xs text-slate-900 outline-none placeholder-slate-400"
           />
           <button
             type="submit"
-            className="bg-gray-800 text-white px-4 self-stretch"
+            aria-label="Search"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-3.5 self-stretch flex items-center justify-center transition cursor-pointer"
           >
-            <FiSearch size={18} />
+            <FiSearch size={14} />
           </button>
         </form>
 
-        <div className="flex items-center gap-4">
-          <Link to="/auth" className="flex items-center gap-1">
-            <FiUser size={24} />
-            <span>Account</span>
+        {/* User Account & Cart */}
+        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          <Link
+            to="/auth"
+            className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 px-2.5 py-1.5 rounded-lg hover:bg-slate-50 transition"
+          >
+            <FiUser size={16} className="text-slate-500" />
+            <span className="hidden sm:inline">
+              {user ? user.name || "Account" : "Sign In"}
+            </span>
           </Link>
 
-          <Link to="/cart" className=" relative">
-            <FiShoppingCart size={18} />
-            <span className="absolute -top-2 -right-2 bg-green-700 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-              {cartItems.length}
-            </span>
+          <Link
+            to="/cart"
+            className="relative flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 transition"
+            aria-label="Cart"
+          >
+            <FiShoppingCart size={16} />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-xs">
+                {cartItems.length}
+              </span>
+            )}
           </Link>
         </div>
       </div>

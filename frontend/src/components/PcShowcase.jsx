@@ -56,7 +56,7 @@ const PcShowcase = () => {
 
             {/* text on top */}
             <div className="relative z-10 h-full p-6 flex flex-col justify-center max-w-[60%]">
-              <span className="self-start text-[10px] font-bold uppercase tracking-wide bg-violet-600 text-white px-2 py-1 rounded-md">
+              <span className="self-start text-[10px] font-bold uppercase tracking-wide bg-blue-600 text-white px-2 py-1 rounded-md">
                 Just Arrived
               </span>
               <h3 className="text-white text-2xl font-bold mt-3 leading-tight">

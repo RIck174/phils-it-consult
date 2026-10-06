@@ -17,7 +17,7 @@ const FloatingCart = () => {
   return (
     <Link
       to="/cart"
-      className={`fixed top-5 right-5 z-40 w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center shadow-lg hover:bg-violet-700 transition-all duration-300 ${
+      className={`fixed top-5 right-5 z-40 w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-700 transition-all duration-300 ${
         visible
           ? "opacity-100 translate-y-0"
           : "opacity-0 -translate-y-4 pointer-events-none"

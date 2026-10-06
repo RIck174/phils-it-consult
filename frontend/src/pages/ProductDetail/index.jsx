@@ -11,6 +11,7 @@ import {
 import api from "../../utils/api";
 import { useCart } from "../../context/CartContext";
 import ProductCard from "../../components/ProductCard";
+import noImage from "../../assets/Lap.jpg";
 
 // edit these to match what you really offer
 const perks = [
@@ -41,6 +42,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [category, setCategory] = useState(null);
   const [related, setRelated] = useState([]);
+  const [variants, setVariants] = useState([]);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -51,10 +54,11 @@ const ProductDetail = () => {
       setLoading(true);
       setNotFound(false);
       try {
-        const [prodRes, catRes, allRes] = await Promise.all([
+        const [prodRes, catRes, allRes, varRes] = await Promise.all([
           api.get(`/products/${id}`),
           api.get("/categories"),
           api.get("/products"),
+          api.get(`/products/${id}/variants`),
         ]);
         const p = prodRes.data;
         setProduct(p);
@@ -64,6 +68,8 @@ const ProductDetail = () => {
             .filter((x) => x.category_id === p.category_id && x.id !== p.id)
             .slice(0, 4),
         );
+        setVariants(varRes.data || []);
+        setSelectedVariant(null);
         setQuantity(1);
         setTab("description");
         window.scrollTo(0, 0);
@@ -86,7 +92,7 @@ const ProductDetail = () => {
         <p className="text-gray-600">Product not found.</p>
         <Link
           to="/shop"
-          className="text-sm font-semibold text-[#0a355f] underline"
+          className="text-sm font-semibold text-blue-600 underline"
         >
           Back to shop
         </Link>
@@ -94,13 +100,23 @@ const ProductDetail = () => {
     );
   }
 
-  const stock = product.stock_quantity;
+  const stock = selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity;
   const outOfStock = stock <= 0;
 
-  const oldPrice = Number(product.old_price);
-  const hasDiscount = oldPrice > Number(product.price);
+  const displayPrice = selectedVariant?.price ? Number(selectedVariant.price) : Number(product.price);
+  const displayImage = selectedVariant?.image_url || product.image_url;
 
-  const handleAdd = () => addToCart({ ...product, quantity });
+  const oldPrice = Number(product.old_price);
+  const hasDiscount = oldPrice > displayPrice;
+
+  const handleAdd = () =>
+    addToCart({
+      ...product,
+      price: displayPrice,
+      image_url: displayImage,
+      quantity,
+      variantLabel: selectedVariant?.label || null,
+    });
   const handleBuyNow = () => {
     handleAdd();
     navigate("/cart");
@@ -141,12 +157,113 @@ const ProductDetail = () => {
 
       {/* top: image + info */}
       <div className="grid md:grid-cols-2 gap-10 mt-6">
-        <div className="border rounded-2xl bg-white p-6 flex items-center justify-center">
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className="w-full h-80 md:h-105 object-contain"
-          />
+
+        {/* LEFT: main image + variant thumbnails below */}
+        <div className="flex flex-col gap-3">
+          <div className="border border-slate-200 rounded-2xl bg-white p-6 flex items-center justify-center min-h-[320px] md:min-h-[400px] shadow-xs">
+            <img
+              src={displayImage || noImage}
+              onError={(e) => { e.target.src = noImage; }}
+              alt={selectedVariant?.label || product.name}
+              className="w-full h-80 md:h-100 object-contain transition-all duration-300"
+            />
+          </div>
+
+          {/* Variant thumbnails under the huge image */}
+          {variants.length > 0 && (
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3">
+              <div className="flex items-center justify-between mb-2 px-1">
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Styles & Variants ({variants.length + 1})
+                </span>
+                <span className="text-[11px] text-blue-600 font-medium">
+                  Click to switch view
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2.5">
+                {/* Base Product Image thumbnail */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedVariant(null)}
+                  title={`Original: ${product.name}`}
+                  className={`group relative w-18 h-18 sm:w-20 sm:h-20 rounded-xl border-2 p-1.5 bg-white flex flex-col items-center justify-center transition cursor-pointer
+                    ${!selectedVariant
+                      ? "border-blue-600 ring-2 ring-blue-500/20 shadow-md"
+                      : "border-slate-200 hover:border-blue-400 hover:shadow-xs"
+                    }`}
+                >
+                  <img
+                    src={product.image_url || noImage}
+                    onError={(e) => { e.target.src = noImage; }}
+                    alt="Original"
+                    className="w-full h-full object-contain"
+                  />
+                  <span className="absolute bottom-1 inset-x-1 text-[9px] font-bold text-center bg-slate-900/70 text-white rounded px-0.5 truncate">
+                    Original
+                  </span>
+                </button>
+
+                {/* Each Variant thumbnail */}
+                {variants.map((v) => {
+                  const isSelected = selectedVariant?.id === v.id;
+                  const noStock = v.stock_quantity <= 0;
+                  return (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setSelectedVariant(isSelected ? null : v)}
+                      disabled={noStock}
+                      title={noStock ? `${v.label} (Out of stock)` : `${v.label} - GH₵${v.price || product.price}`}
+                      className={`group relative w-18 h-18 sm:w-20 sm:h-20 rounded-xl border-2 p-1.5 bg-white flex flex-col items-center justify-center transition cursor-pointer overflow-hidden
+                        ${isSelected
+                          ? "border-blue-600 ring-2 ring-blue-500/20 shadow-md"
+                          : noStock
+                            ? "border-slate-200 opacity-40 cursor-not-allowed bg-slate-100"
+                            : "border-slate-200 hover:border-blue-400 hover:shadow-xs"
+                        }`}
+                    >
+                      {v.image_url ? (
+                        <img
+                          src={v.image_url}
+                          onError={(e) => { e.target.src = noImage; }}
+                          alt={v.label}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : v.color_hex ? (
+                        <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
+                          <span
+                            className="w-7 h-7 rounded-full border border-slate-300 shadow-inner"
+                            style={{ background: v.color_hex }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center w-full h-full text-center px-1">
+                          <span className="text-[10px] font-bold text-slate-700 leading-tight line-clamp-2">
+                            {v.label}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Floating label pill */}
+                      <span className={`absolute bottom-0.5 inset-x-0.5 text-[8.5px] font-bold text-center rounded px-0.5 truncate ${
+                        isSelected ? "bg-blue-600 text-white" : "bg-slate-900/60 text-white"
+                      }`}>
+                        {v.label}
+                      </span>
+
+                      {/* Out of stock line */}
+                      {noStock && (
+                        <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <span className="w-full h-0.5 bg-red-500 rotate-45 absolute" />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
@@ -163,13 +280,15 @@ const ProductDetail = () => {
             {product.description}
           </p>
 
+
+
           <div className="flex items-baseline gap-3 mt-5">
             <span className="text-3xl font-bold text-gray-900">
-              GH₵ {product.price}
+              GH₵ {displayPrice.toFixed(2)}
             </span>
             {hasDiscount && (
               <span className="text-lg text-gray-400 line-through">
-                GH₵ {product.old_price}
+                GH₵ {oldPrice.toFixed(2)}
               </span>
             )}
           </div>
@@ -210,14 +329,14 @@ const ProductDetail = () => {
             <button
               onClick={handleBuyNow}
               disabled={outOfStock}
-              className="bg-[#0a355f] text-white text-sm font-semibold px-8 py-3 rounded-lg hover:bg-[#0d4680] transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="bg-blue-600 text-white text-sm font-semibold px-8 py-3 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               Buy Now
             </button>
             <button
               onClick={handleAdd}
               disabled={outOfStock}
-              className="border-2 border-[#0a355f] text-[#0a355f] text-sm font-semibold px-8 py-3 rounded-lg hover:bg-blue-50 transition disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
+              className="border-2 border-blue-600 text-blue-600 text-sm font-semibold px-8 py-3 rounded-lg hover:bg-blue-50 transition disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
             >
               Add to Cart
             </button>
@@ -227,7 +346,7 @@ const ProductDetail = () => {
           <div className="border-t mt-8 pt-5 space-y-4">
             {perks.map(({ icon: Icon, title, text }) => (
               <div key={title} className="flex items-start gap-3">
-                <Icon className="text-[#0a355f] mt-0.5 shrink-0" size={20} />
+                <Icon className="text-blue-600 mt-0.5 shrink-0" size={20} />
                 <div>
                   <p className="text-sm font-semibold text-gray-900">{title}</p>
                   <p className="text-xs text-gray-500">{text}</p>
@@ -247,7 +366,7 @@ const ProductDetail = () => {
               onClick={() => setTab(t.key)}
               className={`pb-3 text-sm md:text-base transition ${
                 tab === t.key
-                  ? "text-[#0a355f] font-semibold border-b-2 border-[#0a355f] -mb-px"
+                  ? "text-blue-600 font-semibold border-b-2 border-blue-600 -mb-px"
                   : "text-gray-500 hover:text-gray-800"
               }`}
             >
@@ -267,7 +386,7 @@ const ProductDetail = () => {
             <div className="rounded-xl overflow-hidden border">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[#0a355f] text-white text-left">
+                  <tr className="bg-blue-600 text-white text-left">
                     <th className="px-4 py-3 font-semibold">Specification</th>
                     <th className="px-4 py-3 font-semibold">Details</th>
                   </tr>
